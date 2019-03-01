@@ -59,6 +59,7 @@ for ID in idslist:
 			# "5c761fd716fc9104e4915d1c" ROOT TREE WANTS BE CREATED INITIALLY IN MONGO TO SET UP ANALYTICS
 			db.analytics.update({'_id': ObjectId("5c761fd716fc9104e4915d1c")},{'$push': { 'openratedistribution':openrateresultObj }})
 		else:
+			console.log("updating")
 			openrateresultObj = {"openratehours":openratehours,"openratecount":openratecount}
 			db.analytics.update({'_id':ObjectId("5c761fd716fc9104e4915d1c"),'openratedistribution.campaignid':str(ID)},{'$set': {'openratedistribution.$.hourdistribution':openrateresultObj}})
 	except:
@@ -104,7 +105,7 @@ for ID in idslist:
 		campaigncountresultObj = {"countbymonthandyear":{"xlabel":x,"ylabel":y},"countbyweekandyear":{"xweek":xweek,"yweek":yweek}}
 
 		# "5c761fd716fc9104e4915d1c" ROOT TREE WANTS BE CREATED INITIALLY IN MONGO TO SET UP ANALYTICS
-		db.analytics.update({'_id': ObjectId("5c761fd716fc9104e4915d1c")},{'$set': { 'resultObj':resultObj }})
+		db.analytics.update({'_id': ObjectId("5c790033b947840720666231")},{'$set': { 'resultObj':campaigncountresultObj }})
 	except:
 		a = "b"	
 
