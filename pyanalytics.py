@@ -36,9 +36,10 @@ for ID in idslist:
 	dbdata = campaign.find({'_id': ObjectId(ID)},{"_id":1,"clicks":1,"openrate":1})[0]
 	try:
 		
-		df3 = pd.DataFrame(dbdata['openrate'])
-		df3['distributionHour'] = df3['distribution']
-		openratehour  = df3['distributionHour'][0]['hours']
+		openratedataframe = pd.DataFrame(dbdata['openrate'])
+		openratedataframe['distributionHour'] = openratedataframe['distribution']
+		openratehour  = openratedataframe['distributionHour'][0]['hours']
+		# print(openratehour);
 		convertlist = collections.Counter(openratehour);
 		openratehours =[]
 		openratecount =[]
@@ -48,37 +49,33 @@ for ID in idslist:
 		openrateresultObj = {'campaignid':str(ID),
 		'hourdistribution':{"openratehours":openratehours,"openratecount":openratecount}
 		}
-		
-		result = db.analytics.find({'_id': ObjectId("5c761fd716fc9104e4915d1c"),'openratedistribution.campaignid':str(ID)})
+
+		result = db.analytics.find({'_id': ObjectId("5c790033b947840720666231"),'openratedistribution.campaignid':str(ID)})
+		# print(result)
 		resultlist =[]
 
 		for doc in result:
 			resultlist.append(doc)
-
+		
 		if(len(resultlist) == 0):
 			# "5c761fd716fc9104e4915d1c" ROOT TREE WANTS BE CREATED INITIALLY IN MONGO TO SET UP ANALYTICS
-			db.analytics.update({'_id': ObjectId("5c761fd716fc9104e4915d1c")},{'$push': { 'openratedistribution':openrateresultObj }})
+			db.analytics.update({'_id': ObjectId("5c790033b947840720666231")},{'$push': { 'openratedistribution':openrateresultObj }})
 		else:
-			console.log("updating")
+			print("updating")
 			openrateresultObj = {"openratehours":openratehours,"openratecount":openratecount}
-			db.analytics.update({'_id':ObjectId("5c761fd716fc9104e4915d1c"),'openratedistribution.campaignid':str(ID)},{'$set': {'openratedistribution.$.hourdistribution':openrateresultObj}})
-	except:
-		print ("error")
-	try:
-		val = dbdata['clicks']
-		df2 = pd.DataFrame(dbdata['clicks']);
+			db.analytics.update({'_id':ObjectId("5c790033b947840720666231"),'openratedistribution.campaignid':str(ID)},{'$set': {'openratedistribution.$.hourdistribution':openrateresultObj}})
 	except:
 		print ("error")
 
+		
 	try:
-		df2['readabledatetime'] = df2['lastimeclicked'].apply(lambda x : returndatetime(x));
-		df2['hour'] = df2['readabledatetime'].dt.hour
-		groupedhourdf2 = df2['readabledatetime'].groupby(df2['hour']).count()
+		clickratedataframe = pd.DataFrame(dbdata['clicks']);
+		clickratedataframe['readabledatetime'] = clickratedataframe['lasttimeclicked'].apply(lambda x : returndatetime(x));
+		clickratedataframe['hour'] = clickratedataframe['readabledatetime'].dt.hour
+		groupedhourdf2 = clickratedataframe['readabledatetime'].groupby(clickratedataframe['hour']).count()
 		for data in groupedhourdf2.index:
 			hour.append(data)
 			count.append(int(groupedhourdf2.loc[data]))
-			resultObj2 = {"dist":[{"hours":hour,"count":count}]}
-			
 		
 		df['readabledatetime'] = df['timestamp'].apply(lambda x : returndatetime(x));	
 		df['MONTH'] = df['readabledatetime'].apply(lambda x: int(x.month));
@@ -102,11 +99,35 @@ for ID in idslist:
 		for number in groupedweekdf.index:
 		    xweek.append(number)
 		    yweek.append(int(groupedweekdf.loc[number]))    
-		campaigncountresultObj = {"countbymonthandyear":{"xlabel":x,"ylabel":y},"countbyweekandyear":{"xweek":xweek,"yweek":yweek}}
+		campaigncountresultObj = {"countbymonthandyear":{"xlabel":x,"ylabel":y},"countbyweekandyear":{"xweek":xweek,"yweek":yweek}}	
 
-		# "5c761fd716fc9104e4915d1c" ROOT TREE WANTS BE CREATED INITIALLY IN MONGO TO SET UP ANALYTICS
-		db.analytics.update({'_id': ObjectId("5c790033b947840720666231")},{'$set': { 'resultObj':campaigncountresultObj }})
+		clickratedataframe['distributionHour'] = clickratedataframe['distribution']
+		clickratehour  = clickratedataframe['distributionHour'][0]['hours']
+		convertlist2 = collections.Counter(clickratehour);
+		clickratehours=[]
+		clickratecounts =[]
+		for x2,y2 in convertlist2.items():
+			clickratehours.append(x2)
+			clickratecounts.append(y2)
+			clickrateresultObj = {'campaignid':str(ID),
+		'hourdistribution':{"clickratehours":clickratehours,"clickratecounts":clickratecounts}
+		}
+
+		clickrateresult = db.analytics.find({'_id': ObjectId("5c790033b947840720666231"),'clickratedistribution.campaignid':str(ID)})
+		clickrateresultlist =[]
+
+		for doc in clickrateresult:
+			clickrateresultlist.append(doc)
+
+		if(len(clickrateresultlist) == 0):
+			# "5c761fd716fc9104e4915d1c" ROOT TREE WANTS BE CREATED INITIALLY IN MONGO TO SET UP ANALYTICS
+			db.analytics.update({'_id': ObjectId("5c790033b947840720666231")},{'$push': {'clickratemonthweek':campaigncountresultObj,'clickratedistribution':clickrateresultObj }})
+		else:
+			console.log("updating")
+			clickrateresultObj = {"clickratehours":clickratehours,"clickratecounts":clickratecounts}
+			db.analytics.update({'_id':ObjectId("5c790033b947840720666231"),'clickratedistribution.campaignid':str(ID)},{'$set': {'clickratedistribution.$.hourdistribution':clickrateresultObj}})
 	except:
-		a = "b"	
+		print ("error")
+
 
 
