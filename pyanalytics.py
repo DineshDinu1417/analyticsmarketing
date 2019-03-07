@@ -37,10 +37,14 @@ for ID in idslist:
 	try:
 		
 		openratedataframe = pd.DataFrame(dbdata['openrate'])
+		# openratedataframe['distributionHour'] = openratedataframe['distribution']
+		# openratehour  = openratedataframe['distributionHour'][0]['hours']
+		# # print(openratehour);
 		openratedataframe['distributionHour'] = openratedataframe['distribution']
-		openratehour  = openratedataframe['distributionHour'][0]['hours']
-		# print(openratehour);
-		convertlist = collections.Counter(openratehour);
+		openratehours = []
+		for cust in (openratedataframe['distributionHour']).tolist():
+			openratehours = hours + (cust['hours'])
+		convertlist = collections.Counter(openratehours);
 		openratehours =[]
 		openratecount =[]
 		for x,y in convertlist.items():
@@ -77,6 +81,7 @@ for ID in idslist:
 			hour.append(data)
 			count.append(int(groupedhourdf2.loc[data]))
 		
+		
 		df['readabledatetime'] = df['timestamp'].apply(lambda x : returndatetime(x));	
 		df['MONTH'] = df['readabledatetime'].apply(lambda x: int(x.month));
 		df['YEAR'] = df['readabledatetime'].apply(lambda x: int(x.year));
@@ -102,8 +107,12 @@ for ID in idslist:
 		campaigncountresultObj = {"countbymonthandyear":{"xlabel":x,"ylabel":y},"countbyweekandyear":{"xweek":xweek,"yweek":yweek}}	
 
 		clickratedataframe['distributionHour'] = clickratedataframe['distribution']
-		clickratehour  = clickratedataframe['distributionHour'][0]['hours']
-		convertlist2 = collections.Counter(clickratehour);
+		clickratehours = []
+		for cust in (clickratedataframe['distributionHour']).tolist():
+			clickratehours = clickratehours + (cust['hours'])
+		
+		convertlist2 = collections.Counter(clickratehours);
+		print(convertlist2)
 		clickratehours=[]
 		clickratecounts =[]
 		for x2,y2 in convertlist2.items():
@@ -112,18 +121,25 @@ for ID in idslist:
 			clickrateresultObj = {'campaignid':str(ID),
 		'hourdistribution':{"clickratehours":clickratehours,"clickratecounts":clickratecounts}
 		}
+		
+		
+
 
 		clickrateresult = db.analytics.find({'_id': ObjectId("5c790033b947840720666231"),'clickratedistribution.campaignid':str(ID)})
+		
+		
+
 		clickrateresultlist =[]
+
 
 		for doc in clickrateresult:
 			clickrateresultlist.append(doc)
+
 
 		if(len(clickrateresultlist) == 0):
 			# "5c761fd716fc9104e4915d1c" ROOT TREE WANTS BE CREATED INITIALLY IN MONGO TO SET UP ANALYTICS
 			db.analytics.update({'_id': ObjectId("5c790033b947840720666231")},{'$push': {'clickratemonthweek':campaigncountresultObj,'clickratedistribution':clickrateresultObj }})
 		else:
-			console.log("updating")
 			clickrateresultObj = {"clickratehours":clickratehours,"clickratecounts":clickratecounts}
 			db.analytics.update({'_id':ObjectId("5c790033b947840720666231"),'clickratedistribution.campaignid':str(ID)},{'$set': {'clickratedistribution.$.hourdistribution':clickrateresultObj}})
 	except:
